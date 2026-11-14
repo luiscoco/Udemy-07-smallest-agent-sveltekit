@@ -1,0 +1,91 @@
+You are working in an EMPTY folder. Create a complete runnable educational enterprise-style application from scratch.
+
+APPLICATION: The Smallest Agent - Lesson 0 - SvelteKit + Node.js + TypeScript edition.
+
+Create an independent folder 07-smallest-agent-sveltekit. Preserve all earlier editions and prompts. Save this complete prompt beside the other root prompts as Prompt - Create the Enterprise Web Application from Scratch - SvelteKit NodeJS TypeScript.txt and an identical BUILD-PROMPT.txt inside the project. Never read, display, borrow or copy another application's real .env or credentials.
+
+STACK
+- Svelte 5 with runes, SvelteKit 3, strict TypeScript, Vite and the Node adapter. Use genuine .svelte components, filesystem routes and +server.ts endpoints, rather than a plain Node app described as SvelteKit.
+- Actual TypeScript Claude Agent SDK on the server: query() -> for await -> final result. Preserve the recognizable minimal agent loop. No Python bridge, direct REST substitute, browser SDK, mock live answers or fabricated provider responses.
+- Node.js 24. One project package.json and package-lock.json. One server for UI and API on port 4800 in development and production.
+- Verify official APIs and package compatibility first:
+  https://svelte.dev/docs/svelte/overview
+  https://svelte.dev/docs/kit/migrating-to-sveltekit-3
+  https://svelte.dev/docs/kit/routing
+  https://svelte.dev/docs/kit/adapter-node
+  https://svelte.dev/docs/svelte/testing
+  https://code.claude.com/docs/en/agent-sdk/typescript
+- Baseline: Svelte 5.57.3, SvelteKit 3.1.1, adapter-node 6.0.1, vite-plugin-svelte 7.3.1, svelte-check 4.7.8, TypeScript 6.0.3, Vite 8.3.6, Agent SDK 0.3.319, Highlight.js 11.12.0, Marked 18.1.3, DOMPurify 3.4.17, Vitest 5.1.0, jsdom 30.0.0, Svelte Testing Library 5.4.2. Pin compatible installed versions and commit the lockfile.
+- SvelteKit 3 configuration belongs in the sveltekit Vite plugin, not obsolete svelte.config.js. Use #lib subpath imports with extensions and tsconfig extending $app/tsconfig, retaining $app/types. Avoid legacy environment imports and configure private runtime settings only in server modules.
+
+STRUCTURE AND LAUNCH
+- Root package scripts: dev, generate:lesson, typecheck, test, build and start.
+- src/lib: AgentApp.svelte, Lesson.svelte, CodeBlock.svelte, api.ts, types.ts, code.ts, style.css, generated lesson JSON.
+- src/lib/server: config.ts, agent-service.ts, handlers.ts and runtime.ts. Never import this directory from client code.
+- Real +server.ts endpoints: /api/health, /api/agent/query, /api/agent/stream and /openapi.json. Provide a readable /docs page accurately documented as custom API documentation.
+- Five lesson URLs: / (lab), /learn, /setup, /architecture, /walkthrough, with /lab optionally accepted. Use a reusable optional-section page and reactive props so navigation updates the content while retaining lab state. Unknown lesson URLs return 404.
+- src/routes/+layout.svelte supplies shared styling and children; app.html supports SSR and hydration.
+- static contains the local course astronaut, workflow.svg and workflow.puml. scripts contains diagram templates, deterministic excerpt generation and a production start helper.
+- Include .env.example, .gitignore, README.md, ASSETS.md, VERIFICATION.md, BUILD-PROMPT.txt and Start-Application.ps1.
+- npm ci from 07-smallest-agent-sveltekit installs the whole app. npm run dev starts it on http://127.0.0.1:4800. No nested-folder guessing, backend launcher, Python interpreter, .NET or virtual environment.
+- Start-Application.ps1 resolves PSScriptRoot. npm start runs the built Node adapter from the project directory and defaults HOST=127.0.0.1 and PORT=4800. Explain that adapter-node does not automatically load .env; implement server-side own-file loading with process-environment precedence.
+- Keep the SDK external in SSR/production so its CLI runtime resolves correctly. Never bundle it into public assets.
+
+VISUAL STYLE: PRESERVE EVERY PRIOR REQUEST
+Reference: https://github.com/luiscoco/Udemy-Claude-Agent-SDK-lesson01-app
+- Readable typography around 21 px body, at least 16 px secondary text and 18 px code; spacious line height, strong headings and focus outlines.
+- Pastel blue prompt, lilac inspector, mint answer and alternating peach/blue/mint/lilac teaching cards. Rounded corners, blue/orange accents, fine borders and restrained shadows.
+- Persistent accessible light/dark theme with unavailable-storage fallback. Initialize browser-only APIs after mount to keep SSR safe.
+- Responsive stacked grids on narrow screens, 44 px targets, native labels/buttons, Ctrl+Enter, active navigation, skip link and reduced-motion support.
+- Local astronaut illustration with alt text and explicit provenance. Copy only known safe source/asset files from older editions, never whole directories containing keys.
+- Code snippets are syntax-colored, indented, scrollable and keyboard accessible. Highlight TypeScript, JavaScript, HTML, PowerShell, JSON, shell and .env examples; unknown languages escape safely.
+- Safe Markdown answers with highlighted fenced code. Svelte {@html} receives sanitized Markdown only. Highlight.js escapes code; DOMPurify removes unsafe rendered markup.
+
+FIVE COMPLETE SECTIONS
+1. Application lab: course header/hero/stack badges, server/key-presence status, docs link and theme control; three-step introduction; Hello world! default prompt, trimmed counter/max 4000 and example buttons; Stream/Simple modes; synchronous duplicate-submit guard, disabled busy controls, elapsed indicator and Ctrl+Enter; real final answer, turns, duration and estimated USD cost (null means Not reported); copy with feedback/fallback and Markdown download; timestamped safe SDK event timeline with badges and expandable highlighted JSON; 500-row display cap without losing the final result; idle/loading/success/error states and snackbar; preserve specific safe HTTP error details and retryability. Never preload fake agent answers.
+2. What you will learn: at least six useful cards on the core loop, Svelte reactivity, SvelteKit server boundaries, private configuration, SDK messages versus tokens, tool isolation and safe rendering. Useful next-section links.
+3. How to run: exact Windows PowerShell commands from Lesson 0, cd into the new application, npm ci, guarded .env copy, edit instructions, npm run dev and browser URL. Explain Node 24, no virtual environment, script-based launch from another directory, optional model/system prompt, bounded turns, precedence, restarts and presence versus authenticated provider readiness. Include typecheck/test/build/start and stop-dev-before-production instructions.
+4. Architecture & workflow: explain Svelte component -> typed fetch -> SvelteKit route/validation -> server-only SDK service -> SDK/CLI -> Claude. Real local UML sequence diagram with five lifelines, call/return arrows, message loop and success/failure/input alternatives. Downloadable SVG and editable PlantUML, no hosted renderer dependency.
+5. Code walkthrough: at least five actual highlighted source excerpts with filename and meaningful explanations covering input, validation/delegation, SDK loop/result and safe presentation. No unrelated-stack snippets or pseudocode presented as live implementation.
+
+UML SOURCE-CARD REQUIREMENT
+- Exactly 16 numbered interactions: submit prompt; same-origin POST; validation/options; server delegation; SDK/provider boundary; model-response observation; safe projection; SSE frame; Svelte state update; normalized final metrics; ResultMessage dispatch; sanitized answer/metrics; done enforcement; safe error without done; UI error/snackbar; missing-key/input rejection before SDK execution.
+- EACH arrow has its own pastel explanation card, matching number/title, actual source filename, colored TypeScript excerpt and plain explanation connecting code to the arrow.
+- Generate excerpts from actual files using stable markers, identifying omitted context and boundaries. The model transport is internal to the SDK; do not invent an application HTTP call for it.
+- A deterministic generator validates all 16 labels and markers, rejects missing/duplicate numbers and writes the source JSON plus SVG/PlantUML copies. Build regenerates assets.
+- Bounded diagram/code horizontal scroll at mobile widths, with keyboard focus and large readable diagram text.
+
+NAVIGATION REGRESSION
+- Real lesson links must update content and aria-current on the same mounted app. Preserve prompt/result while visiting other sections. Keep state per component/request; no mutable global store that leaks SSR users.
+- Test clicking all five tabs on one reused component, checking headings/active links, all 16 architecture cards, and retained prompt on return. A test-injected navigation callback may rerender the same section prop; report that this is component coverage, not full browser-router coverage.
+- Independently exercise real SSR routes over HTTP. Do not claim those requests prove browser hydration or tab interaction.
+
+SERVER CONTRACTS AND LIFECYCLE
+- GET health exposes status and api_key_configured only. It does not prove authentication or available credit.
+- POST query accepts JSON prompt and returns AgentResult: result, num_turns, duration_ms, total_cost_usd and is_error.
+- POST stream accepts the same body and emits UTF-8 SSE message events, then done; failures emit error and close without done. This is message-level SDK streaming, not token streaming.
+- Validate actual body bytes at 32 KiB, JSON syntax, content type, origin and trimmed string length 1-4000 before SDK execution. Return safe detail: 400 malformed JSON, 403 foreign origin, 413 oversized body, 415 wrong type, 422 invalid prompt. Never echo input or raw exception context.
+- Missing key: query HTTP 503 or SSE error. Provider failure: query safe 502 or SSE error after headers. Invalid input/missing key must never invoke SDK.
+- Compare actual protocol and Host including port. Preserve localhost versus 127.0.0.1 and ignore untrusted forwarded headers. Explicitly verify adapter-node origin behavior in dev and production; no wildcard CORS.
+- Add heartbeat comments, three-minute deadline, disconnect/reader cancellation, cleanup of timers/listeners, and conversation.close in finally.
+- Require a final SDK result before done. Error subtypes remain failures even when is_error=false; transport done never overrides result failure.
+- tools=[] removes built-ins. Also allowedTools=[], permissionMode=dontAsk, settings/skills/MCP/plugins empty, strict MCP, persistSession=false and bounded maxTurns. Clearing allowedTools alone is not a tool ban.
+- Pass this app's private key into SDK subprocess options without process-wide credential mutation; disable remote Claude.ai MCP for the run.
+- Project only safe text, subtype/model and final metrics. Exclude thinking, raw SDK/config/environment, tool arguments, paths and session IDs. Redact exact key occurrences before truncation.
+- Public presentation names SystemMessage/AssistantMessage/UserMessage/ResultMessage/OtherMessage are safe labels, not claims about raw SDK class names.
+- Public contracts have no SDK/config/server imports. Browser client runtime-checks contracts, handles split UTF-8 and CRLF, comments, partial/multiple frames and multiline data, requires result plus done and cancels readers on failure.
+
+PRIVATE .ENV EXAMPLE
+ANTHROPIC_API_KEY=sk-ant-replace-with-your-key
+CLAUDE_MODEL=
+AGENT_SYSTEM_PROMPT=
+AGENT_MAX_TURNS=1
+
+Create only .env.example, never a real key. Ignore .env variants except the example, dependencies, build output and test artifacts. Environment overrides the file. Turns accept 1-10, default 1; placeholder counts as missing. Model availability and billing depend on the user's Anthropic account. This local lesson has no public-hosting authentication/quotas/history/tool-enabled feature requirements.
+
+VERIFICATION AND DELIVERY
+- Strict Svelte/TypeScript checks, meaningful mocked SDK/service/handler tests, frontend parser tests and component interactions. Cover validation, missing key, projection/redaction, non-success result, safe failures, absent final result, reader/request abort, duplicate submission, both modes, code colors, XSS sanitization, theme, all-tab reuse and all source cards.
+- Build the actual Node adapter. Start and stop only servers you own; exercise real dev and production HTTP routes, assets, docs/schema, health, origin/validation and no-key responses on port 4800.
+- Verify deterministic generation, identical prompt copies, diagram structure and clean source changes without exposing secrets.
+- Tests inject SDK behavior and spend no credits. Do not claim live Claude authentication or inference without an authorized credential-backed run. State explicitly if full browser visual/router QA was unavailable.
+- Document actual results and limitations in VERIFICATION.md. Final response gives the new folder, matching prompt and exact PowerShell launch/configuration commands.

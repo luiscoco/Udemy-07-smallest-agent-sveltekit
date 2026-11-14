@@ -1,0 +1,146 @@
+[
+  {
+    "number": 1,
+    "title": "Run agent (prompt)",
+    "source": "src/lib/AgentApp.svelte",
+    "language": "typescript",
+    "text": "The Svelte form trims the prompt and prevents duplicate submissions.",
+    "code": "const trimmed = prompt.trim();\nif (busy || !trimmed || trimmed.length > 4000) return;\nbusy = true;\nstatus = 'running'; notice = ''; result = null; messages = []; error = ''; elapsed = 0;\nconst started = performance.now();\ncontroller = new AbortController();",
+    "explanation": "A synchronous lock applies before any async work. Validation is repeated on the server."
+  },
+  {
+    "number": 2,
+    "title": "POST /api/agent/stream",
+    "source": "src/lib/api.ts",
+    "language": "typescript",
+    "text": "The browser posts JSON to a relative same-origin endpoint.",
+    "code": "const response = await fetch('/api/agent/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }), signal });\nif (!response.ok) {\n  const data: unknown = await response.json().catch(() => null);\n  throw new Error(detail(data, `The API could not start the stream (HTTP ${response.status}). Check the server and prompt.`));\n}\nif (!response.body) throw new Error('The API returned an empty stream. Please try again.');",
+    "explanation": "SvelteKit serves the UI and API on the same Node server. Private configuration never enters this client."
+  },
+  {
+    "number": 3,
+    "title": "Validate; tools disabled",
+    "source": "src/lib/server/handlers.ts",
+    "language": "typescript",
+    "text": "The server treats all JSON input as untrusted.",
+    "code": "const prompt = validatePrompt(body);\nif (prompt === null) throw new InputError(422, 'Prompt must contain 1–4000 characters after trimming.');\nreturn prompt;",
+    "explanation": "The request reader also bounds actual body bytes, validates content type and checks Origin. The SDK independently disables built-in tools."
+  },
+  {
+    "number": 4,
+    "title": "streamAgent() / query()",
+    "source": "src/routes/api/agent/stream/+server.ts",
+    "language": "typescript",
+    "text": "A real SvelteKit POST route delegates to the server-only handlers.",
+    "code": "export function POST({ request }: { request: Request }) { return handlers().stream(request); }",
+    "explanation": "The runtime composes validated configuration and the SDK service per request. Client modules cannot import this server-only directory."
+  },
+  {
+    "number": 5,
+    "title": "Prompt; no built-in tools",
+    "source": "src/lib/server/agent-service.ts",
+    "language": "typescript",
+    "text": "The actual SDK query boundary owns the CLI runtime and model transport.",
+    "code": "const conversation = queryFn({ prompt, options: agentOptions(config, controller) });\ntry {\n  for await (const message of conversation) {\n    if (message.type === 'result') return resultData(message);\n  }\n  throw new Error('Agent ended without a result');",
+    "explanation": "The application supplies a prompt and typed options, then consumes SDK messages. The model exchange itself is internal to the SDK."
+  },
+  {
+    "number": 6,
+    "title": "Model response",
+    "source": "src/lib/server/agent-service.ts",
+    "language": "typescript",
+    "text": "Observe SDK messages until a final result appears.",
+    "code": "for await (const message of conversation) {\n  if (message.type === 'result') return resultData(message);\n}\nthrow new Error('Agent ended without a result');",
+    "explanation": "This runAgent excerpt shows the same loop as the terminal lesson. streamAgent consumes the iterator while forwarding safe progress projections."
+  },
+  {
+    "number": 7,
+    "title": "Safe SDK message",
+    "source": "src/lib/server/agent-service.ts",
+    "language": "typescript",
+    "text": "Only allowlisted data leaves the SDK service.",
+    "code": "    yield { type, summary, data };\n  }\n  if (!foundResult) throw new Error('Agent ended without a result');\n} finally { conversation.close?.(); }",
+    "explanation": "Text, system subtype and final metrics are projected. Thinking, tool inputs, paths, session IDs and raw configuration are excluded."
+  },
+  {
+    "number": 8,
+    "title": "SSE message event",
+    "source": "src/lib/server/handlers.ts",
+    "language": "typescript",
+    "text": "The handler encodes UTF-8 SSE frames.",
+    "code": "const sendEvent = (event: string, data: unknown) => {\n  if (!closed) streamController.enqueue(encoder.encode(`event: ${event}\\ndata: ${JSON.stringify(data)}\\n\\n`));\n};",
+    "explanation": "Heartbeat comments keep the stream active. Request abort, reader cancellation and the three-minute deadline clean up execution."
+  },
+  {
+    "number": 9,
+    "title": "Update typed state",
+    "source": "src/lib/AgentApp.svelte",
+    "language": "typescript",
+    "text": "Each safe event appends a timestamped Svelte timeline row.",
+    "code": "  if (messages.length < 500) messages = [...messages, { ...message, elapsed: Math.round(performance.now() - started) }];\n  if (message.type === 'ResultMessage' && isAgentResult(message.data)) { final = message.data; result = message.data; }\n}, controller.signal);",
+    "explanation": "The 500-row display limit does not prevent final-result processing. State belongs to this component, rather than a shared server store."
+  },
+  {
+    "number": 10,
+    "title": "ResultMessage fields",
+    "source": "src/lib/server/agent-service.ts",
+    "language": "typescript",
+    "text": "Normalize answer, turns, duration, estimated cost and error flag.",
+    "code": "function resultData(message: SDKResultMessage): AgentResult {\n  return {\n    result: message.subtype === 'success' ? redact(message.result || '') : 'The agent could not complete this prompt. Check the server configuration.',\n    num_turns: message.num_turns, duration_ms: message.duration_ms,\n    total_cost_usd: message.total_cost_usd ?? null,\n    is_error: message.subtype !== 'success' || Boolean(message.is_error),\n  };\n}",
+    "explanation": "Non-success subtypes remain failures even if is_error is false. Exact key occurrences are redacted; absent cost remains null."
+  },
+  {
+    "number": 11,
+    "title": "SSE ResultMessage",
+    "source": "src/lib/api.ts",
+    "language": "typescript",
+    "text": "Validate the final-result contract before delivery to Svelte.",
+    "code": "  if (event === 'message') { const message = messageFrom(data); if (message.type === 'ResultMessage') finalReceived = true; onMessage(message); }\n});\nif (!completed || !finalReceived) throw new Error('The connection ended before the agent finished. Please try again.');",
+    "explanation": "ResultMessage is a public presentation label for a safe SDK result projection. It uses the same SSE message event as progress."
+  },
+  {
+    "number": 12,
+    "title": "Render answer + metrics",
+    "source": "src/lib/code.ts",
+    "language": "typescript",
+    "text": "Sanitize Markdown and highlighted code before rendering HTML.",
+    "code": "export function renderMarkdown(text: string): string {\n  if (typeof window === 'undefined') return '';\n  return DOMPurify.sanitize(markdown.parse(text, { async: false }));\n}",
+    "explanation": "Svelte HTML insertion receives only sanitized Markdown. CodeBlock uses escaped Highlight.js output for trusted source snippets and DOMPurify in the browser."
+  },
+  {
+    "number": 13,
+    "title": "SSE done event",
+    "source": "src/lib/api.ts",
+    "language": "typescript",
+    "text": "Require both a final result and done before resolving the stream.",
+    "code": "  if (event === 'done') completed = true;\n  if (event === 'message') { const message = messageFrom(data); if (message.type === 'ResultMessage') finalReceived = true; onMessage(message); }\n});\nif (!completed || !finalReceived) throw new Error('The connection ended before the agent finished. Please try again.');",
+    "explanation": "Transport completion does not override an SDK error result. The parser handles split UTF-8, CRLF, comments and multiple frames."
+  },
+  {
+    "number": 14,
+    "title": "SSE error; no done",
+    "source": "src/lib/server/handlers.ts",
+    "language": "typescript",
+    "text": "A failure after SSE starts emits a safe error without done.",
+    "code": "} catch { sendEvent('error', { detail: FAILURE }); }\nfinally { finish(); }",
+    "explanation": "Query failures instead return HTTP 502. Raw provider exceptions and submitted values never enter these error details."
+  },
+  {
+    "number": 15,
+    "title": "Error + snackbar",
+    "source": "src/lib/AgentApp.svelte",
+    "language": "typescript",
+    "text": "Show the safe error and snackbar, then restore controls.",
+    "code": "  const message = err instanceof Error ? err.message : 'The request failed. Check the server connection and API key.';\n  error = message; notice = message; status = 'error';\n} else status = 'idle';",
+    "explanation": "Specific HTTP validation and origin details survive the client boundary. Completion and teardown clear timers and cancel owned requests."
+  },
+  {
+    "number": 16,
+    "title": "Key: SSE error / input: 422",
+    "source": "src/lib/server/handlers.ts",
+    "language": "typescript",
+    "text": "A missing key ends the stream before the SDK service is called.",
+    "code": "if (!config.apiKeyConfigured) { sendEvent('error', { detail: MISSING_KEY }); finish(); return; }\nrequest.signal.addEventListener('abort', abort, { once: true });",
+    "explanation": "Simple mode returns 503. Invalid prompts are rejected with 422 before SSE headers. Neither path calls the model."
+  }
+]
